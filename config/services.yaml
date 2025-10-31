@@ -1,0 +1,70 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
+parameters:
+    documents_storage_path: '%env(resolve:DOCUMENTS_STORAGE_PATH)%'
+    upload_max_size: '%env(int:UPLOAD_MAX_SIZE)%'
+    file_retention_days: '%env(default:file_retention_days_default:int:FILE_RETENTION_DAYS)%'
+    file_retention_days_default: 30
+
+services:
+    # default configuration for services in *this* file
+    _defaults:
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
+    App\:
+        resource: '../src/'
+        exclude:
+            - '../src/DependencyInjection/'
+            - '../src/Entity/'
+            - '../src/Kernel.php'
+
+    # add more service definitions when explicit configuration is needed
+    # please note that last definitions always *replace* previous ones
+    
+    # JWT Token Manager service
+    App\Security\JwtTokenManager:
+        arguments:
+            $lexikJwtManager: '@lexik_jwt_authentication.jwt_manager'
+            $entityManager: '@doctrine.orm.entity_manager'
+
+    # RBAC Service
+    App\Security\RbacService:
+        arguments:
+            $security: '@security.helper'
+
+    # Document Storage Service
+    App\Service\DocumentStorageService:
+        arguments:
+            $basePath: '%documents_storage_path%'
+
+    # Document Upload Controller
+    App\Controller\DocumentUploadController:
+        arguments:
+            $uploadMaxSize: '%upload_max_size%'
+
+    # Document Processing Service
+    App\Service\DocumentProcessingService:
+        arguments:
+            $ocrServiceUrl: '%env(OCR_SERVICE_URL)%'
+
+    # OCR Webhook Controller
+    App\Controller\Api\OcrWebhookController:
+        arguments:
+            $webhookSecret: '%env(OCR_WEBHOOK_SECRET)%'
+
+    # OCR API Client Service
+    App\Service\OcrApiClient:
+        arguments:
+            $ocrServiceUrl: '%env(OCR_SERVICE_URL)%'
+
+    # Cleanup Old Files Command
+    App\Command\CleanupOldFilesCommand:
+        arguments:
+            $documentsBasePath: '%documents_storage_path%'
+            $defaultRetentionDays: '%file_retention_days%'

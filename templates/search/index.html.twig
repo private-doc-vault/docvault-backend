@@ -1,0 +1,362 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Search Documents - DocVault{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('styles') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('search') }}
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    {# Notification Container #}
+    <div id="notification-container" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    </div>
+
+    {# Page Header #}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-3">
+                <i class="bi bi-search"></i> Search Documents
+            </h1>
+
+            {# Main Search Bar #}
+            <div class="card">
+                <div class="card-body">
+                    <form id="search-form">
+                        <div class="row g-3">
+                            <div class="col-md-8">
+                                <div class="position-relative">
+                                    <div class="input-group input-group-lg">
+                                        <input type="text" class="form-control" id="search-query"
+                                               placeholder="Search by filename, content, or keywords..."
+                                               aria-label="Search documents"
+                                               autocomplete="off">
+                                        <button class="btn btn-primary" type="submit" id="search-btn">
+                                            <i class="bi bi-search"></i> Search
+                                        </button>
+                                    </div>
+                                    {# Autocomplete Suggestions Dropdown #}
+                                    <div class="dropdown-menu w-100" id="search-autocomplete-suggestions"
+                                         style="max-height: 300px; overflow-y: auto; margin-top: 2px;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="d-flex gap-2">
+                                    {# Search History Dropdown #}
+                                    <div class="dropdown flex-fill">
+                                        <button class="btn btn-outline-secondary w-100 position-relative" type="button"
+                                                id="search-history-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="bi bi-clock-history"></i> History
+                                            <span id="history-count-badge"
+                                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none">
+                                                0
+                                            </span>
+                                        </button>
+                                        <div class="dropdown-menu dropdown-menu-end" id="search-history-dropdown"
+                                             style="min-width: 400px; max-height: 400px; overflow-y: auto;">
+                                            <div id="search-history-list"></div>
+                                        </div>
+                                    </div>
+
+                                    {# Saved Searches Button #}
+                                    <button class="btn btn-outline-info flex-fill" type="button" id="saved-searches-toggle">
+                                        <i class="bi bi-bookmark"></i> Saved
+                                    </button>
+
+                                    {# Advanced Search Toggle #}
+                                    <button class="btn btn-outline-primary flex-fill" type="button" id="advanced-search-toggle">
+                                        <i class="bi bi-chevron-down"></i> Advanced
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    {# Advanced Search Panel #}
+                    <div id="advanced-search-panel" class="d-none mt-3 pt-3 border-top">
+                        <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="category-filter" class="form-label">Category</label>
+                                <select class="form-select" id="category-filter">
+                                    <option value="">Loading...</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="date-from" class="form-label">Date From</label>
+                                <input type="date" class="form-control" id="date-from">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="date-to" class="form-label">Date To</label>
+                                <input type="date" class="form-control" id="date-to">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label class="form-label">Tags</label>
+                                <div id="tag-filter" class="border rounded p-2" style="max-height: 150px; overflow-y: auto;">
+                                    <p class="text-muted small mb-0">Loading tags...</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {# Additional Advanced Filters #}
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-3">
+                                <label for="language-filter" class="form-label">
+                                    Language
+                                    <i class="bi bi-info-circle text-muted" title="Filter by detected document language"></i>
+                                </label>
+                                <select class="form-select" id="language-filter">
+                                    <option value="">All Languages</option>
+                                    <option value="en">English</option>
+                                    <option value="es">Spanish</option>
+                                    <option value="fr">French</option>
+                                    <option value="de">German</option>
+                                    <option value="it">Italian</option>
+                                    <option value="pt">Portuguese</option>
+                                    <option value="pl">Polish</option>
+                                    <option value="nl">Dutch</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="confidence-filter" class="form-label">
+                                    Min OCR Confidence
+                                    <span class="badge bg-secondary" id="confidence-value">70%</span>
+                                </label>
+                                <input type="range" class="form-range" id="confidence-filter"
+                                       min="0" max="100" value="70" step="5">
+                                <small class="form-text text-muted">Filter by OCR accuracy</small>
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="file-size-min" class="form-label">Min File Size (KB)</label>
+                                <input type="number" class="form-control" id="file-size-min"
+                                       placeholder="e.g., 10" min="0">
+                            </div>
+
+                            <div class="col-md-3">
+                                <label for="file-size-max" class="form-label">Max File Size (MB)</label>
+                                <input type="number" class="form-control" id="file-size-max"
+                                       placeholder="e.g., 100" min="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Saved Searches Panel #}
+                    <div id="saved-searches-panel" class="d-none mt-3 pt-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h6 class="mb-0"><i class="bi bi-bookmark-fill"></i> Saved Searches</h6>
+                            <button class="btn btn-sm btn-success" id="save-search-btn">
+                                <i class="bi bi-plus-circle"></i> Save Current Search
+                            </button>
+                        </div>
+                        <div id="saved-searches-list" style="max-height: 300px; overflow-y: auto;">
+                            <div class="text-center py-3">
+                                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Search Tips #}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="alert alert-info d-flex align-items-start" role="alert">
+                <i class="bi bi-lightbulb-fill fs-4 me-3"></i>
+                <div>
+                    <strong>Search Tips:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Use quotes for exact phrases: <code>"annual report"</code></li>
+                        <li>Search across filenames, OCR text, and document content</li>
+                        <li>Use advanced filters to narrow down results by category, tags, or date range</li>
+                        <li>Click on any result to view the full document with preview</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Results Section #}
+    <div class="row">
+        <div class="col-12">
+            {# Results Count #}
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 id="results-count" class="mb-0"></h5>
+                    <div id="search-time" class="d-none mt-1"></div>
+                </div>
+                <div id="export-actions" class="d-none">
+                    <div class="dropdown">
+                        <button class="btn btn-outline-success dropdown-toggle" type="button"
+                                id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="bi bi-download"></i> Export Results
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                            <li>
+                                <a class="dropdown-item export-link" href="#" data-format="csv">
+                                    <i class="bi bi-file-earmark-spreadsheet text-success"></i> Export as CSV
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item export-link" href="#" data-format="excel">
+                                    <i class="bi bi-file-earmark-excel text-success"></i> Export as Excel
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item export-link" href="#" data-format="pdf">
+                                    <i class="bi bi-file-earmark-pdf text-danger"></i> Export as PDF
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <span class="dropdown-item-text text-muted small">
+                                    <i class="bi bi-info-circle"></i> Exports current search results
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            {# Search Results Container #}
+            <div id="search-results">
+                <div class="text-center py-5">
+                    <i class="bi bi-search fs-1 text-muted"></i>
+                    <p class="text-muted mt-3">Enter a search query to find documents</p>
+                </div>
+            </div>
+
+            {# Pagination #}
+            <div class="mt-4">
+                <div id="pagination-container"></div>
+            </div>
+        </div>
+    </div>
+
+    {# Quick Actions #}
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="mb-3">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ path('app_documents') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-folder"></i> Browse All Documents
+                        </a>
+                        <a href="{{ path('app_documents_upload') }}" class="btn btn-outline-success">
+                            <i class="bi bi-upload"></i> Upload Document
+                        </a>
+                        <a href="{{ path('app_dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Save Search Modal #}
+    <div class="modal fade" id="save-search-modal" tabindex="-1" aria-labelledby="saveSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="saveSearchModalLabel">
+                        <i class="bi bi-bookmark-plus"></i> Save Search
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="save-search-form">
+                        <div class="mb-3">
+                            <label for="save-search-name" class="form-label">Search Name *</label>
+                            <input type="text" class="form-control" id="save-search-name"
+                                   placeholder="e.g., Recent Invoices" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="save-search-query" class="form-label">Query *</label>
+                            <input type="text" class="form-control" id="save-search-query"
+                                   placeholder="Search query" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="save-search-description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="save-search-description" rows="2"
+                                      placeholder="Brief description of this saved search"></textarea>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="save-search-public">
+                            <label class="form-check-label" for="save-search-public">
+                                Make this search public (visible to all users)
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="save-search-submit">
+                        <i class="bi bi-save"></i> Save Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Edit Search Modal #}
+    <div class="modal fade" id="edit-search-modal" tabindex="-1" aria-labelledby="editSearchModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editSearchModalLabel">
+                        <i class="bi bi-pencil"></i> Edit Saved Search
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="edit-search-form">
+                        <input type="hidden" id="edit-search-id">
+                        <div class="mb-3">
+                            <label for="edit-search-name" class="form-label">Search Name *</label>
+                            <input type="text" class="form-control" id="edit-search-name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-search-query" class="form-label">Query *</label>
+                            <input type="text" class="form-control" id="edit-search-query" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="edit-search-description" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="edit-search-description" rows="2"></textarea>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit-search-public">
+                            <label class="form-check-label" for="edit-search-public">
+                                Make this search public (visible to all users)
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="edit-search-submit">
+                        <i class="bi bi-save"></i> Update Search
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

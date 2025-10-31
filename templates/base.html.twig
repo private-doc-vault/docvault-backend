@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}DocVault{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>📁</text></svg>">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+        {% block stylesheets %}{% endblock %}
+    </head>
+    <body>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="{{ path('app_dashboard') }}">DocVault</a>
+
+                {% if app.user %}
+                    <div class="navbar-nav ms-auto">
+                        <span class="navbar-text me-3">
+                            Welcome, {{ app.user.firstName ?? app.user.email }}
+                        </span>
+                        <a class="nav-link" href="{{ path('app_profile') }}">Profile</a>
+                        <a class="nav-link" href="{{ path('app_documents') }}">Documents</a>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <a class="nav-link" href="{{ path('app_admin') }}">Admin</a>
+                        {% endif %}
+                        <form class="d-inline" method="post" action="{{ path('app_logout') }}">
+                            <input type="hidden" name="_token" value="{{ csrf_token('logout') }}">
+                            <button class="btn btn-outline-light btn-sm" type="submit">Logout</button>
+                        </form>
+                    </div>
+                {% endif %}
+            </div>
+        </nav>
+
+        <main class="container mt-4">
+            {% for flash_error in app.flashes('error') %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ flash_error }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            {% for flash_notice in app.flashes('notice') %}
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    {{ flash_notice }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+
+            {% block body %}{% endblock %}
+        </main>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+        {% block javascripts %}{% endblock %}
+    </body>
+</html>

@@ -1,0 +1,209 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - DocVault{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('styles') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('dashboard') }}
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    {# Page Header #}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">Dashboard</h1>
+            <p class="text-muted">Welcome back, {{ user.firstName ?? user.email }}!</p>
+        </div>
+    </div>
+
+    {# Statistics Cards #}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-card-value" id="total-documents">0</div>
+                    <div class="stat-card-label">Total Documents</div>
+                </div>
+                <div class="stat-card-icon bg-primary-light text-primary">
+                    <i class="bi bi-file-earmark-text"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-card-value" id="documents-today">0</div>
+                    <div class="stat-card-label">Uploaded Today</div>
+                </div>
+                <div class="stat-card-icon bg-success-light text-success">
+                    <i class="bi bi-upload"></i>
+                </div>
+            </div>
+        </div>
+
+        {% if is_granted('ROLE_ADMIN') %}
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-card-value" id="total-users">0</div>
+                    <div class="stat-card-label">Total Users</div>
+                </div>
+                <div class="stat-card-icon bg-info-light text-info">
+                    <i class="bi bi-people"></i>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="stat-card">
+            <div class="stat-card-header">
+                <div>
+                    <div class="stat-card-value" id="storage-used">0 MB</div>
+                    <div class="stat-card-label">Storage Used</div>
+                </div>
+                <div class="stat-card-icon bg-warning-light text-warning">
+                    <i class="bi bi-hdd"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Quick Actions #}
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h5>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ path('app_documents') }}" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Upload Document
+                        </a>
+                        <a href="{{ path('app_documents') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-folder"></i> Browse Documents
+                        </a>
+                        <a href="{{ path('app_profile') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-person"></i> My Profile
+                        </a>
+                        {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_admin') }}" class="btn btn-outline-warning">
+                            <i class="bi bi-gear"></i> Admin Panel
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Recent Documents #}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-clock-history"></i> Recent Documents
+                    </h5>
+                    <button class="btn btn-sm btn-outline-primary" id="refresh-stats">
+                        <i class="bi bi-arrow-clockwise"></i> Refresh
+                    </button>
+                </div>
+                <div class="card-body">
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-6 g-3" id="recent-documents">
+                        {# Documents will be loaded via JavaScript #}
+                        <div class="col">
+                            <div class="text-center text-muted py-5">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-2">Loading documents...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# User Info #}
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-person-badge"></i> Account Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Name</dt>
+                        <dd class="col-sm-8">{{ user.firstName }} {{ user.lastName }}</dd>
+
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8">{{ user.email }}</dd>
+
+                        <dt class="col-sm-4">Roles</dt>
+                        <dd class="col-sm-8">
+                            {% for role in user.roles %}
+                                <span class="badge bg-info me-1">{{ role }}</span>
+                            {% endfor %}
+                        </dd>
+
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">
+                            {% if user.isActive %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                            {% if user.isVerified %}
+                                <span class="badge bg-success">Verified</span>
+                            {% else %}
+                                <span class="badge bg-warning">Unverified</span>
+                            {% endif %}
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mt-3 mt-md-0">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-info-circle"></i> Getting Started
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Upload:</strong> Drag and drop or click to upload documents
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Organize:</strong> Use categories and tags to organize your files
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>Search:</strong> Full-text search across all your documents
+                        </li>
+                        <li class="mb-0">
+                            <i class="bi bi-check-circle text-success"></i>
+                            <strong>OCR:</strong> Automatic text extraction from images and PDFs
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

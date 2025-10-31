@@ -1,0 +1,14 @@
+services:
+    # Meilisearch Client Configuration
+    Meilisearch\Client:
+        arguments:
+            $url: '%env(MEILISEARCH_HOST)%'
+            $apiKey: '%env(MEILISEARCH_KEY)%'
+
+    # Meilisearch Service
+    App\Service\MeilisearchService:
+        arguments:
+            $client: '@Meilisearch\Client'
+            $logger: '@logger'
+        tags:
+            - { name: 'monolog.logger', channel: 'meilisearch' }
