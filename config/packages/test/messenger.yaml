@@ -1,6 +1,0 @@
-framework:
-    messenger:
-        # Use synchronous transport for testing to avoid Redis dependency
-        transports:
-            async: 'in-memory://'
-            async_indexing: 'in-memory://'
