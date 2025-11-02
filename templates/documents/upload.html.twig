@@ -1,0 +1,172 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Upload Documents - DocVault{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('styles') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('upload') }}
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    {# Page Header #}
+    <div class="row mb-4">
+        <div class="col-12">
+            <h1 class="h3 mb-0">
+                <i class="bi bi-cloud-upload"></i> Upload Documents
+            </h1>
+            <p class="text-muted">Drag and drop files or click to select</p>
+        </div>
+    </div>
+
+    {# Notification Container #}
+    <div id="notification-container" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    </div>
+
+    {# Upload Statistics #}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6 text-center">
+                            <h3 class="mb-0" id="total-uploads">0</h3>
+                            <p class="text-muted small mb-0">Total Documents</p>
+                        </div>
+                        <div class="col-6 text-center">
+                            <h3 class="mb-0" id="today-uploads">0</h3>
+                            <p class="text-muted small mb-0">Uploaded Today</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="batch-mode-toggle">
+                        <label class="form-check-label" for="batch-mode-toggle">
+                            Batch Upload Mode
+                        </label>
+                        <small class="d-block text-muted">Upload multiple files at once (up to 50 files)</small>
+                    </div>
+                    <span id="batch-mode-indicator" class="badge bg-info mt-2 d-none">
+                        <i class="bi bi-lightning-fill"></i> Batch Mode Active
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        {# Upload Options #}
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-sliders"></i> Upload Options
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {# Category Selection #}
+                    <div class="mb-3">
+                        <label for="category-select" class="form-label">Category</label>
+                        <select class="form-select" id="category-select">
+                            <option value="">Loading categories...</option>
+                        </select>
+                        <small class="text-muted">Optional: Assign a category to uploaded documents</small>
+                    </div>
+
+                    {# Tags Selection #}
+                    <div class="mb-3">
+                        <label class="form-label">Tags</label>
+                        <div id="tags-container" class="border rounded p-2" style="max-height: 200px; overflow-y: auto;">
+                            <p class="text-muted small mb-0">Loading tags...</p>
+                        </div>
+                        <small class="text-muted">Optional: Select tags for uploaded documents</small>
+                    </div>
+
+                    <hr>
+
+                    {# Supported Formats #}
+                    <div class="mb-0">
+                        <h6 class="small fw-bold mb-2">Supported Formats</h6>
+                        <ul class="list-unstyled small text-muted mb-0">
+                            <li><i class="bi bi-file-earmark-pdf text-danger"></i> PDF Documents</li>
+                            <li><i class="bi bi-file-earmark-word text-primary"></i> Word Documents</li>
+                            <li><i class="bi bi-file-earmark-excel text-success"></i> Excel Spreadsheets</li>
+                            <li><i class="bi bi-file-earmark-image text-info"></i> Images (JPG, PNG, GIF)</li>
+                            <li><i class="bi bi-file-earmark-text"></i> Text Files</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Dropzone Upload Area #}
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-upload"></i> Drop Files Here
+                    </h5>
+                    <div>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="clear-btn">
+                            <i class="bi bi-x-circle"></i> Clear
+                        </button>
+                        <button type="button" class="btn btn-sm btn-primary" id="upload-btn">
+                            <i class="bi bi-cloud-upload"></i> Upload All
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {# Dropzone Container #}
+                    <div id="document-dropzone" class="dropzone border-2 border-dashed rounded p-5 text-center" style="min-height: 400px; background-color: #f8f9fa;">
+                    </div>
+
+                    {# Upload Guidelines #}
+                    <div class="mt-3">
+                        <div class="alert alert-info mb-0">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Upload Guidelines:</strong>
+                            <ul class="mb-0 mt-2">
+                                <li>Maximum file size: <strong>100 MB</strong></li>
+                                <li>Maximum files per upload: <strong>50 files</strong></li>
+                                <li>Supported formats: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG, GIF, TXT</li>
+                                <li>Files are automatically processed for full-text search and OCR</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Quick Actions #}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="mb-3"><i class="bi bi-lightning"></i> Quick Actions</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="{{ path('app_documents') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-folder"></i> Browse Documents
+                        </a>
+                        <a href="{{ path('app_dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_admin') }}" class="btn btn-outline-warning">
+                            <i class="bi bi-gear"></i> Admin Panel
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

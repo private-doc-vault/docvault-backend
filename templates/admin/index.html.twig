@@ -1,0 +1,89 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Administration - {{ parent() }}{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-12">
+        <h1>Administration Panel</h1>
+        <p class="lead">Manage users, permissions, and system settings.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">User Management</h5>
+                <p class="card-text">Create, edit, and manage user accounts.</p>
+                <button class="btn btn-primary" type="button">Manage Users</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Role & Permissions</h5>
+                <p class="card-text">Configure roles and permission settings.</p>
+                <button class="btn btn-primary" type="button">Manage Roles</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">System Settings</h5>
+                <p class="card-text">Configure application settings and preferences.</p>
+                <button class="btn btn-primary" type="button">System Settings</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5>System Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Application Status</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Environment:</strong> {{ app.environment }}</li>
+                            <li><strong>Debug Mode:</strong> {{ app.debug ? 'Enabled' : 'Disabled' }}</li>
+                            <li><strong>Current User:</strong> {{ user.email }}</li>
+                            <li><strong>Session ID:</strong> {{ app.session.id|slice(0, 8) }}...</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Quick Stats</h6>
+                        <ul class="list-unstyled">
+                            <li><strong>Total Users:</strong> <span class="badge bg-info">TBD</span></li>
+                            <li><strong>Active Sessions:</strong> <span class="badge bg-success">TBD</span></li>
+                            <li><strong>Documents:</strong> <span class="badge bg-primary">TBD</span></li>
+                            <li><strong>Storage Used:</strong> <span class="badge bg-warning">TBD</span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="alert alert-info" role="alert">
+            <h6 class="alert-heading">Development Note</h6>
+            <p class="mb-0">
+                Administrative features are being implemented incrementally.
+                User management, role assignment, and system monitoring features
+                will be added in upcoming development phases.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

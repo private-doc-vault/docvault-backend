@@ -1,0 +1,190 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Documents - DocVault{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('styles') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('document-browser') }}
+{% endblock %}
+
+{% block body %}
+<div class="container-fluid">
+    {# Notification Container #}
+    <div id="notification-container" class="position-fixed top-0 end-0 p-3" style="z-index: 9999;">
+    </div>
+
+    {# Page Header #}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h1 class="h3 mb-0">
+                <i class="bi bi-folder"></i> My Documents
+            </h1>
+            <p class="text-muted" id="results-count">Loading documents...</p>
+        </div>
+        <div class="col-md-6 text-md-end">
+            <a href="{{ path('app_documents_upload') }}" class="btn btn-primary">
+                <i class="bi bi-cloud-upload"></i> Upload Documents
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        {# Sidebar Filters #}
+        <div class="col-lg-3 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-funnel"></i> Filters
+                    </h5>
+                    <button class="btn btn-sm btn-outline-secondary" id="clear-filters-btn">
+                        Clear
+                    </button>
+                </div>
+                <div class="card-body">
+                    {# Search #}
+                    <div class="mb-3">
+                        <label for="search-input" class="form-label">Search</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="search-input"
+                                   placeholder="Search documents...">
+                            <button class="btn btn-outline-primary" type="button" id="search-btn">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    {# Category Filter #}
+                    <div class="mb-3">
+                        <label for="category-filter" class="form-label">Category</label>
+                        <select class="form-select" id="category-filter">
+                            <option value="">Loading...</option>
+                        </select>
+                    </div>
+
+                    {# Tags Filter #}
+                    <div class="mb-3">
+                        <label class="form-label">Tags</label>
+                        <div id="tag-filter" class="border rounded p-2" style="max-height: 300px; overflow-y: auto;">
+                            <p class="text-muted small mb-0">Loading tags...</p>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    {# Sort Options #}
+                    <div class="mb-0">
+                        <label for="sort-select" class="form-label">Sort By</label>
+                        <select class="form-select" id="sort-select">
+                            <option value="createdAt:desc">Newest First</option>
+                            <option value="createdAt:asc">Oldest First</option>
+                            <option value="filename:asc">Name (A-Z)</option>
+                            <option value="filename:desc">Name (Z-A)</option>
+                            <option value="fileSize:desc">Largest First</option>
+                            <option value="fileSize:asc">Smallest First</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            {# Quick Actions #}
+            <div class="card mt-3">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="bi bi-lightning"></i> Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ path('app_documents_upload') }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-upload"></i> Upload
+                        </a>
+                        <a href="{{ path('app_dashboard') }}" class="btn btn-sm btn-outline-secondary">
+                            <i class="bi bi-speedometer2"></i> Dashboard
+                        </a>
+                        {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_admin') }}" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-gear"></i> Admin
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Main Content Area #}
+        <div class="col-lg-9">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Documents</h5>
+                        <div class="btn-toolbar" role="toolbar">
+                            {# View Toggle #}
+                            <div class="btn-group me-2" role="group">
+                                <button type="button" class="btn btn-outline-primary active" id="grid-view-btn"
+                                        title="Grid View">
+                                    <i class="bi bi-grid-3x3-gap"></i>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary" id="list-view-btn"
+                                        title="List View">
+                                    <i class="bi bi-list"></i>
+                                </button>
+                            </div>
+
+                            {# Refresh Button #}
+                            <button type="button" class="btn btn-outline-secondary" id="refresh-btn"
+                                    title="Refresh">
+                                <i class="bi bi-arrow-clockwise"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body" style="min-height: 500px;">
+                    {# Documents Container - Content loaded via JavaScript #}
+                    <div id="documents-container" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="text-muted mt-3">Loading documents...</p>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    {# Pagination Container #}
+                    <div id="pagination-container"></div>
+                </div>
+            </div>
+
+            {# Tips Card #}
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h6 class="mb-3">
+                        <i class="bi bi-lightbulb"></i> Tips
+                    </h6>
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Use the search bar to find documents by name or content
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Filter by category or tags to organize your documents
+                        </li>
+                        <li class="mb-2">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Switch between grid and list view for different layouts
+                        </li>
+                        <li class="mb-0">
+                            <i class="bi bi-check-circle text-success"></i>
+                            Click on a document to view details and preview
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

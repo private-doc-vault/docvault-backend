@@ -1,0 +1,44 @@
+framework:
+    messenger:
+        # Uncomment this (and the failed transport below) to send failed messages to this transport for later handling.
+        failure_transport: failed
+
+        transports:
+            # https://symfony.com/doc/current/messenger.html#transport-configuration
+            async:
+                dsn: '%env(REDIS_URL)%'
+                options:
+                    stream: messages_async
+                retry_strategy:
+                    max_retries: 3
+                    delay: 1000
+                    multiplier: 2
+            # Transport for search indexing with more aggressive retry strategy
+            # Meilisearch indexing failures are typically transient (network issues, service restarts)
+            # We use more retries with longer delays to ensure documents eventually get indexed
+            async_indexing:
+                dsn: '%env(REDIS_URL)%'
+                options:
+                    stream: messages_indexing
+                retry_strategy:
+                    max_retries: 5
+                    delay: 2000
+                    multiplier: 2
+                    # Retry delays: 2s, 4s, 8s, 16s, 32s (total ~62 seconds)
+            failed: 'doctrine://default?queue_name=failed'
+            sync: 'sync://'
+
+        routing:
+            # Route document processing messages to async transport
+            App\Message\ProcessDocumentMessage: async
+            App\Message\UpdateProcessingStatusMessage: async
+            # Route indexing messages to async_indexing transport with enhanced retry logic
+            App\Message\IndexDocumentMessage: async_indexing
+
+# when@test:
+#    framework:
+#        messenger:
+#            transports:
+#                # replace with your transport name here (e.g., my_transport: 'in-memory://')
+#                # For more Messenger testing tools, see https://github.com/zenstruck/messenger-test
+#                async: 'in-memory://'

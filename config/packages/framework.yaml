@@ -1,0 +1,20 @@
+# see https://symfony.com/doc/current/reference/configuration/framework.html
+framework:
+    secret: '%env(APP_SECRET)%'
+    csrf_protection: true
+
+    # Session configuration for web interface
+    session:
+        cookie_secure: auto
+        cookie_samesite: lax
+        cookie_lifetime: 3600 # 1 hour
+        gc_maxlifetime: 3600
+
+    #esi: true
+    #fragments: true
+
+when@test:
+    framework:
+        test: true
+        session:
+            storage_factory_id: session.storage.factory.mock_file
