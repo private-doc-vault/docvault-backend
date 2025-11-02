@@ -64,11 +64,19 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-suggest
 
+      - name: Generate JWT keys
+        run: |
+          mkdir -p config/jwt
+          php bin/console lexik:jwt:generate-keypair --skip-if-exists
+        env:
+          JWT_PASSPHRASE: test_passphrase
+
       - name: Setup test environment
         env:
           DATABASE_URL: postgresql://docvault:test_password@localhost:5432/docvault_test
           REDIS_URL: redis://localhost:6379/0
           APP_ENV: test
+          JWT_PASSPHRASE: test_passphrase
         run: |
           php bin/console doctrine:database:create --env=test --if-not-exists
           php bin/console doctrine:migrations:migrate --no-interaction --env=test --allow-no-migration
@@ -78,6 +86,7 @@ jobs:
           DATABASE_URL: postgresql://docvault:test_password@localhost:5432/docvault_test
           REDIS_URL: redis://localhost:6379/0
           APP_ENV: test
+          JWT_PASSPHRASE: test_passphrase
         run: vendor/bin/phpunit
 
       - name: Build Docker image
