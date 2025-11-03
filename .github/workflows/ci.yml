@@ -38,6 +38,20 @@ jobs:
         ports:
           - 6379:6379
 
+      meilisearch:
+        image: getmeili/meilisearch:v1.5
+        env:
+          MEILI_ENV: development
+          MEILI_NO_ANALYTICS: true
+          MEILI_MASTER_KEY: test_master_key
+        options: >-
+          --health-cmd "curl -f http://localhost:7700/health || exit 1"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 7700:7700
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -85,8 +99,11 @@ jobs:
         env:
           DATABASE_URL: postgresql://docvault:test_password@localhost:5432/docvault_test
           REDIS_URL: redis://localhost:6379/0
+          MEILISEARCH_URL: http://localhost:7700
+          MEILISEARCH_KEY: test_master_key
           APP_ENV: test
           JWT_PASSPHRASE: test_passphrase
+          OCR_WEBHOOK_SECRET: test_webhook_secret
         run: vendor/bin/phpunit
 
       - name: Build Docker image

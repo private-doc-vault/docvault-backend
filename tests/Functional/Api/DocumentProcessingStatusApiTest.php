@@ -28,6 +28,9 @@ class DocumentProcessingStatusApiTest extends WebTestCase
 
         $this->entityManager = $container->get(EntityManagerInterface::class);
 
+        // Clean up any existing test user first
+        $this->cleanupTestUser();
+
         // Create test user
         $this->testUser = new User();
         $this->testUser->setEmail('processing-test@example.com');
@@ -43,12 +46,23 @@ class DocumentProcessingStatusApiTest extends WebTestCase
     protected function tearDown(): void
     {
         // Clean up test data
-        if (isset($this->testUser)) {
-            $this->entityManager->remove($this->testUser);
-            $this->entityManager->flush();
-        }
+        $this->cleanupTestUser();
 
         parent::tearDown();
+    }
+
+    private function cleanupTestUser(): void
+    {
+        $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => 'processing-test@example.com']);
+        if ($user) {
+            // Remove any documents associated with this user
+            $documents = $this->entityManager->getRepository(Document::class)->findBy(['uploadedBy' => $user]);
+            foreach ($documents as $document) {
+                $this->entityManager->remove($document);
+            }
+            $this->entityManager->remove($user);
+            $this->entityManager->flush();
+        }
     }
 
     private function createTestDocument(string $status = 'uploaded'): Document

@@ -550,9 +550,7 @@ class OcrWebhookControllerTest extends WebTestCase
     public function testProgressUpdateWebhookUpdatesDocumentProgress(): void
     {
         // GIVEN: Document in processing state
-        $document = $this->createTestDocument('doc-progress-' . uniqid());
-        $document->setProcessingStatus('processing');
-        $this->entityManager->flush();
+        $document = $this->createTestDocument('processing');
 
         // AND: Progress update webhook payload
         $payload = [
@@ -590,9 +588,7 @@ class OcrWebhookControllerTest extends WebTestCase
     public function testMultipleProgressUpdatesTrackProgression(): void
     {
         // GIVEN: Document in processing state
-        $document = $this->createTestDocument('doc-multi-progress-' . uniqid());
-        $document->setProcessingStatus('processing');
-        $this->entityManager->flush();
+        $document = $this->createTestDocument('processing');
 
         // WHEN: Multiple progress updates sent (25%, 50%, 75%)
         $progressUpdates = [
@@ -637,9 +633,7 @@ class OcrWebhookControllerTest extends WebTestCase
     public function testProgressUpdateWithInvalidPercentageReturnsError(): void
     {
         // GIVEN: Document in processing state
-        $document = $this->createTestDocument('doc-invalid-progress-' . uniqid());
-        $document->setProcessingStatus('processing');
-        $this->entityManager->flush();
+        $document = $this->createTestDocument('processing');
 
         // AND: Progress update with invalid percentage (>100)
         $payload = [
@@ -672,8 +666,7 @@ class OcrWebhookControllerTest extends WebTestCase
     public function testProgressUpdatePreservesExistingOcrData(): void
     {
         // GIVEN: Document with some OCR text already stored
-        $document = $this->createTestDocument('doc-preserve-' . uniqid());
-        $document->setProcessingStatus('processing');
+        $document = $this->createTestDocument('processing');
         $document->setOcrText('Partial OCR text');
         $document->setConfidenceScore('0.85');
         $this->entityManager->flush();
