@@ -45,10 +45,13 @@ class OcrWebhookControllerTest extends WebTestCase
 
     protected function tearDown(): void
     {
-        // Clean up test data
+        // Clean up test data - re-fetch user in case it became detached
         if (isset($this->testUser)) {
-            $this->entityManager->remove($this->testUser);
-            $this->entityManager->flush();
+            $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => 'webhook-test@example.com']);
+            if ($user) {
+                $this->entityManager->remove($user);
+                $this->entityManager->flush();
+            }
         }
 
         parent::tearDown();
