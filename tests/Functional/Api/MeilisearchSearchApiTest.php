@@ -32,6 +32,13 @@ class MeilisearchSearchApiTest extends WebTestCase
         $this->entityManager = $container->get(EntityManagerInterface::class);
         $this->searchService = $container->get(SearchService::class);
 
+        // Initialize Meilisearch index
+        try {
+            $this->searchService->initializeIndex();
+        } catch (\Exception $e) {
+            // Index may already exist, ignore
+        }
+
         // Create test user
         $this->testUser = new User();
         $this->testUser->setEmail('search-test@example.com');
