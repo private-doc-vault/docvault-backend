@@ -105,6 +105,51 @@ class SavedSearchController extends AbstractController
     }
 
     /**
+     * Get user's search history
+     * NOTE: Must come before /{id} routes to avoid "history" being matched as an ID
+     */
+    #[Route('/history', name: 'api_search_history_list', methods: ['GET'])]
+    public function history(Request $request): JsonResponse
+    {
+        $limit = min(100, max(1, (int) $request->query->get('limit', 20)));
+
+        $history = $this->entityManager
+            ->getRepository(SearchHistory::class)
+            ->createQueryBuilder('h')
+            ->where('h.user = :user')
+            ->setParameter('user', $this->getUser())
+            ->orderBy('h.createdAt', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+
+        $data = array_map(fn(SearchHistory $h) => [
+            'id' => $h->getId(),
+            'query' => $h->getQuery(),
+            'filters' => $h->getFilters(),
+            'resultCount' => $h->getResultCount(),
+            'createdAt' => $h->getCreatedAt()?->format(\DateTimeInterface::ATOM),
+        ], $history);
+
+        return new JsonResponse($data);
+    }
+
+    /**
+     * Clear search history
+     * NOTE: Must come before /{id} routes to avoid "history" being matched as an ID
+     */
+    #[Route('/history/clear', name: 'api_search_history_clear', methods: ['DELETE'])]
+    public function clearHistory(): JsonResponse
+    {
+        $this->entityManager
+            ->createQuery('DELETE FROM App\Entity\SearchHistory h WHERE h.user = :user')
+            ->setParameter('user', $this->getUser())
+            ->execute();
+
+        return new JsonResponse(['message' => 'Search history cleared']);
+    }
+
+    /**
      * Get a saved search by ID
      */
     #[Route('/{id}', name: 'api_saved_searches_get', methods: ['GET'])]
@@ -251,48 +296,5 @@ class SavedSearchController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'Saved search deleted']);
-    }
-
-    /**
-     * Get user's search history
-     */
-    #[Route('/history', name: 'api_search_history_list', methods: ['GET'])]
-    public function history(Request $request): JsonResponse
-    {
-        $limit = min(100, max(1, (int) $request->query->get('limit', 20)));
-
-        $history = $this->entityManager
-            ->getRepository(SearchHistory::class)
-            ->createQueryBuilder('h')
-            ->where('h.user = :user')
-            ->setParameter('user', $this->getUser())
-            ->orderBy('h.createdAt', 'DESC')
-            ->setMaxResults($limit)
-            ->getQuery()
-            ->getResult();
-
-        $data = array_map(fn(SearchHistory $h) => [
-            'id' => $h->getId(),
-            'query' => $h->getQuery(),
-            'filters' => $h->getFilters(),
-            'resultCount' => $h->getResultCount(),
-            'createdAt' => $h->getCreatedAt()?->format(\DateTimeInterface::ATOM),
-        ], $history);
-
-        return new JsonResponse($data);
-    }
-
-    /**
-     * Clear search history
-     */
-    #[Route('/history/clear', name: 'api_search_history_clear', methods: ['DELETE'])]
-    public function clearHistory(): JsonResponse
-    {
-        $this->entityManager
-            ->createQuery('DELETE FROM App\Entity\SearchHistory h WHERE h.user = :user')
-            ->setParameter('user', $this->getUser())
-            ->execute();
-
-        return new JsonResponse(['message' => 'Search history cleared']);
     }
 }
