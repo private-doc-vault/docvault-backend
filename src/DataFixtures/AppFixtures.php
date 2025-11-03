@@ -44,28 +44,30 @@ class AppFixtures extends Fixture
 
     private function loadDefaultAdmin(ObjectManager $manager): void
     {
-        // Check if admin already exists (idempotency)
-        $existingAdmin = $manager->getRepository(User::class)
+        // Check if admin already exists
+        $admin = $manager->getRepository(User::class)
             ->findOneBy(['email' => 'admin@docvault.local']);
 
-        if ($existingAdmin) {
-            return;
+        if (!$admin) {
+            $admin = new User();
+            $admin->setId(Uuid::uuid4()->toString());
+            $admin->setEmail('admin@docvault.local');
+            $admin->setCreatedAt(new \DateTimeImmutable());
         }
 
-        $admin = new User();
-        $admin->setId(Uuid::uuid4()->toString());
-        $admin->setEmail('admin@docvault.local');
+        // Always update these fields to ensure correct configuration
         $admin->setFirstName('System');
         $admin->setLastName('Administrator');
         $admin->setRoles(['ROLE_USER', 'ROLE_ADMIN']);
         $admin->setIsActive(true);
         $admin->setIsVerified(true);
-        $admin->setCreatedAt(new \DateTimeImmutable());
         $admin->setUpdatedAt(new \DateTimeImmutable());
 
-        // Default password is 'admin123' - should be changed on first login
-        $hashedPassword = $this->passwordHasher->hashPassword($admin, 'admin123');
-        $admin->setPassword($hashedPassword);
+        // Set default password if not already set
+        if (!$admin->getPassword()) {
+            $hashedPassword = $this->passwordHasher->hashPassword($admin, 'admin123');
+            $admin->setPassword($hashedPassword);
+        }
 
         $manager->persist($admin);
     }
