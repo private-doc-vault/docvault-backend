@@ -30,9 +30,32 @@ class SavedSearchApiTest extends WebTestCase
         $container = static::getContainer();
         $this->entityManager = $container->get(EntityManagerInterface::class);
 
+        // Clean up any existing test users first
+        $this->cleanupTestUsers();
+
         // Create test users
         $this->testUser = $this->createUser('testuser@example.com', 'Test User');
         $this->otherUser = $this->createUser('otheruser@example.com', 'Other User');
+    }
+
+    protected function tearDown(): void
+    {
+        if (isset($this->entityManager)) {
+            $this->cleanupTestUsers();
+        }
+        parent::tearDown();
+    }
+
+    private function cleanupTestUsers(): void
+    {
+        $testEmails = ['testuser@example.com', 'otheruser@example.com'];
+        foreach ($testEmails as $email) {
+            $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
+            if ($user) {
+                $this->entityManager->remove($user);
+            }
+        }
+        $this->entityManager->flush();
     }
 
     private function createUser(string $email, string $name): User
@@ -437,11 +460,4 @@ class SavedSearchApiTest extends WebTestCase
         $this->assertResponseStatusCodeSame(Response::HTTP_NOT_FOUND);
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        // Clean up test data
-        $this->entityManager->clear();
-    }
 }
