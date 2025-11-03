@@ -188,10 +188,8 @@ class WebhookCallbackFlowTest extends WebTestCase
 
         $this->assertEquals('failed', $updatedDocument->getProcessingStatus());
 
-        // AND: Error message should be stored in metadata
-        $metadata = $updatedDocument->getMetadata();
-        $this->assertArrayHasKey('error', $metadata);
-        $this->assertEquals('File is corrupted or unreadable', $metadata['error']);
+        // AND: Error message should be stored in document
+        $this->assertEquals('File is corrupted or unreadable', $updatedDocument->getProcessingError());
 
         // AND: No IndexDocumentMessage should be dispatched for failed documents
         $transport = static::getContainer()->get('messenger.transport.async_indexing');
@@ -499,10 +497,8 @@ class WebhookCallbackFlowTest extends WebTestCase
         $updatedDocument = $this->entityManager->getRepository(Document::class)->find($documentId);
         $this->assertEquals('processing', $updatedDocument->getProcessingStatus());
 
-        // AND: Progress should be stored in metadata
-        $metadata = $updatedDocument->getMetadata();
-        $this->assertArrayHasKey('progress', $metadata);
-        $this->assertEquals(50, $metadata['progress']);
+        // AND: Progress should be stored in document
+        $this->assertEquals(50, $updatedDocument->getProgress());
 
         // Cleanup
         $this->entityManager->remove($updatedDocument);
