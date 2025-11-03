@@ -52,6 +52,12 @@ class SearchHistoryApiTest extends WebTestCase
         foreach ($testEmails as $email) {
             $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             if ($user) {
+                // First remove all search history for this user
+                $searchHistories = $this->entityManager->getRepository(SearchHistory::class)->findBy(['user' => $user]);
+                foreach ($searchHistories as $searchHistory) {
+                    $this->entityManager->remove($searchHistory);
+                }
+                // Then remove the user
                 $this->entityManager->remove($user);
             }
         }

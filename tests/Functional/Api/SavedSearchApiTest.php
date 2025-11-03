@@ -52,6 +52,12 @@ class SavedSearchApiTest extends WebTestCase
         foreach ($testEmails as $email) {
             $user = $this->entityManager->getRepository(User::class)->findOneBy(['email' => $email]);
             if ($user) {
+                // First remove all saved searches for this user
+                $savedSearches = $this->entityManager->getRepository(SavedSearch::class)->findBy(['user' => $user]);
+                foreach ($savedSearches as $savedSearch) {
+                    $this->entityManager->remove($savedSearch);
+                }
+                // Then remove the user
                 $this->entityManager->remove($user);
             }
         }
