@@ -445,8 +445,8 @@ class DocumentProcessingService
 
         $this->entityManager->flush();
 
-        // Restart processing
-        $this->processDocument($document);
+        // Document is now queued for processing
+        // The actual processing will be handled by background workers
     }
 
     /**

@@ -85,11 +85,12 @@ class DocumentProcessingStatusApiTest extends WebTestCase
     public function testGetProcessingStatusRequiresAuthentication(): void
     {
         $document = $this->createTestDocument();
+        $documentId = $document->getId();
 
-        // Restart client to clear authentication
-        $this->client->restart();
+        // Create a new unauthenticated client
+        $unauthenticatedClient = static::createClient();
 
-        $this->client->request('GET', '/api/documents/' . $document->getId() . '/processing-status');
+        $unauthenticatedClient->request('GET', '/api/documents/' . $documentId . '/processing-status');
 
         $this->assertResponseStatusCodeSame(401);
 
@@ -137,11 +138,12 @@ class DocumentProcessingStatusApiTest extends WebTestCase
     public function testRetryProcessingRequiresAuthentication(): void
     {
         $document = $this->createTestDocument('failed');
+        $documentId = $document->getId();
 
-        // Restart client to clear authentication
-        $this->client->restart();
+        // Create a new unauthenticated client
+        $unauthenticatedClient = static::createClient();
 
-        $this->client->request('POST', '/api/documents/' . $document->getId() . '/retry-processing');
+        $unauthenticatedClient->request('POST', '/api/documents/' . $documentId . '/retry-processing');
 
         $this->assertResponseStatusCodeSame(401);
 
