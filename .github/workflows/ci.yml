@@ -99,7 +99,7 @@ jobs:
         env:
           DATABASE_URL: postgresql://docvault:test_password@localhost:5432/docvault_test
           REDIS_URL: redis://localhost:6379/0
-          MEILISEARCH_URL: http://localhost:7700
+          MEILISEARCH_HOST: http://localhost:7700
           MEILISEARCH_KEY: test_master_key
           APP_ENV: test
           JWT_PASSPHRASE: test_passphrase
