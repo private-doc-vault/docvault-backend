@@ -113,4 +113,4 @@ jobs:
       - name: Test Docker image
         run: |
           docker run --rm docvault-backend:test php --version
-          docker run --rm docvault-backend:test php bin/console --version
+          docker run --rm -e APP_ENV=prod docvault-backend:test php bin/console --version
