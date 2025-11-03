@@ -372,8 +372,8 @@ class SearchService
 
             $result = $index->search($query, $options);
 
-            // Convert SearchResult object to array
-            $resultArray = $result->toArray();
+            // Convert SearchResult object to array (or keep as array if already converted)
+            $resultArray = is_array($result) ? $result : $result->toArray();
 
             $this->logger->info('Search performed', [
                 'query' => $query,
