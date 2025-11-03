@@ -551,10 +551,12 @@ class OcrWebhookControllerTest extends WebTestCase
     {
         // GIVEN: Document in processing state
         $document = $this->createTestDocument('processing');
+        $metadata = $document->getMetadata();
+        $taskId = $metadata['ocr_task_id'];
 
         // AND: Progress update webhook payload
         $payload = [
-            'task_id' => 'task-progress-123',
+            'task_id' => $taskId,
             'document_id' => $document->getId(),
             'status' => 'processing',
             'progress' => 50,
@@ -589,6 +591,8 @@ class OcrWebhookControllerTest extends WebTestCase
     {
         // GIVEN: Document in processing state
         $document = $this->createTestDocument('processing');
+        $metadata = $document->getMetadata();
+        $taskId = $metadata['ocr_task_id'];
 
         // WHEN: Multiple progress updates sent (25%, 50%, 75%)
         $progressUpdates = [
@@ -599,7 +603,7 @@ class OcrWebhookControllerTest extends WebTestCase
 
         foreach ($progressUpdates as $update) {
             $payload = [
-                'task_id' => 'task-multi-progress',
+                'task_id' => $taskId,
                 'document_id' => $document->getId(),
                 'status' => 'processing',
                 'progress' => $update['progress'],
@@ -671,9 +675,12 @@ class OcrWebhookControllerTest extends WebTestCase
         $document->setConfidenceScore('0.85');
         $this->entityManager->flush();
 
+        $metadata = $document->getMetadata();
+        $taskId = $metadata['ocr_task_id'];
+
         // WHEN: Progress update sent
         $payload = [
-            'task_id' => 'task-preserve',
+            'task_id' => $taskId,
             'document_id' => $document->getId(),
             'status' => 'processing',
             'progress' => 60,
