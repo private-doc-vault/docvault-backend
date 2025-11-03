@@ -372,13 +372,16 @@ class SearchService
 
             $result = $index->search($query, $options);
 
+            // Convert SearchResult object to array
+            $resultArray = $result->toArray();
+
             $this->logger->info('Search performed', [
                 'query' => $query,
-                'hits' => $result['estimatedTotalHits'] ?? 0,
-                'processing_time_ms' => $result['processingTimeMs'] ?? 0
+                'hits' => $resultArray['estimatedTotalHits'] ?? 0,
+                'processing_time_ms' => $resultArray['processingTimeMs'] ?? 0
             ]);
 
-            return $result;
+            return $resultArray;
         } catch (\Exception $e) {
             $this->logger->error('Search failed', [
                 'query' => $query,
