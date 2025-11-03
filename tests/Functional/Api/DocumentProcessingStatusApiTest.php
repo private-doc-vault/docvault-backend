@@ -72,9 +72,11 @@ class DocumentProcessingStatusApiTest extends WebTestCase
     {
         $document = $this->createTestDocument();
 
-        $this->client = static::createClient(); // New unauthenticated client
+        // Shutdown kernel and create new unauthenticated client
+        static::ensureKernelShutdown();
+        $unauthenticatedClient = static::createClient();
 
-        $this->client->request('GET', '/api/documents/' . $document->getId() . '/processing-status');
+        $unauthenticatedClient->request('GET', '/api/documents/' . $document->getId() . '/processing-status');
 
         $this->assertResponseStatusCodeSame(401);
 
@@ -123,9 +125,11 @@ class DocumentProcessingStatusApiTest extends WebTestCase
     {
         $document = $this->createTestDocument('failed');
 
-        $this->client = static::createClient(); // New unauthenticated client
+        // Shutdown kernel and create new unauthenticated client
+        static::ensureKernelShutdown();
+        $unauthenticatedClient = static::createClient();
 
-        $this->client->request('POST', '/api/documents/' . $document->getId() . '/retry-processing');
+        $unauthenticatedClient->request('POST', '/api/documents/' . $document->getId() . '/retry-processing');
 
         $this->assertResponseStatusCodeSame(401);
 

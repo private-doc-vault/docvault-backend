@@ -25,6 +25,7 @@ class OcrWebhookControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
+        static::ensureKernelShutdown();
         $this->client = static::createClient();
         $container = static::getContainer();
 
@@ -318,12 +319,13 @@ class OcrWebhookControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
         $secondResponseData = json_decode($this->client->getResponse()->getContent(), true);
 
-        // Document should still be in completed state
-        $this->entityManager->refresh($document);
-        $this->assertEquals('completed', $document->getProcessingStatus());
+        // Document should still be in completed state - re-fetch from DB
+        $documentId = $document->getId();
+        $updatedDocument = $this->entityManager->getRepository(Document::class)->find($documentId);
+        $this->assertEquals('completed', $updatedDocument->getProcessingStatus());
 
         // Cleanup
-        $this->entityManager->remove($document);
+        $this->entityManager->remove($updatedDocument);
         $this->entityManager->flush();
     }
 
