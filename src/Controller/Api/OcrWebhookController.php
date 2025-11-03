@@ -230,9 +230,9 @@ class OcrWebhookController extends AbstractController
             $document->setOcrText($result['text']);
         }
 
-        // Store confidence score
-        if (isset($result['confidence'])) {
-            $confidence = $result['confidence'];
+        // Store confidence score (accept both 'confidence' and 'confidence_score')
+        $confidence = $result['confidence'] ?? $result['confidence_score'] ?? null;
+        if ($confidence !== null) {
             // Ensure confidence is in 0-1 range
             if ($confidence > 1.0) {
                 $confidence = $confidence / 100.0;
