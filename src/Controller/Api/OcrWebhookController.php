@@ -248,8 +248,10 @@ class OcrWebhookController extends AbstractController
         // Store metadata
         $metadata = $document->getMetadata() ?? [];
 
-        if (isset($result['metadata'])) {
-            $metadata['extracted_metadata'] = $result['metadata'];
+        // Check for metadata in result first, then top-level payload
+        $extractedMetadata = $result['metadata'] ?? $payload['metadata'] ?? null;
+        if ($extractedMetadata !== null) {
+            $metadata['extracted_metadata'] = $extractedMetadata;
         }
 
         if (isset($result['category'])) {
