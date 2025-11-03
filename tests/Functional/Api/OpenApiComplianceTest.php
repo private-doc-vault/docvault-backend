@@ -223,7 +223,11 @@ class OpenApiComplianceTest extends WebTestCase
 
     public function testAllEndpointsHaveSecurityOrExplicitlyExcluded(): void
     {
-        $publicEndpoints = ['/auth/register', '/auth/login'];
+        $publicEndpoints = [
+            '/auth/register',
+            '/auth/login',
+            '/webhooks/ocr/callback'  // Uses signature validation instead of session auth
+        ];
 
         foreach ($this->openApiSpec['paths'] as $path => $methods) {
             foreach ($methods as $method => $config) {
