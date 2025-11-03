@@ -187,14 +187,26 @@ class UserRegistrationTest extends WebTestCase
         // Arrange
         $client = static::createClient();
 
+        $email = 'duplicate' . time() . '@example.com';
         $userData = [
-            'email' => 'admin@docvault.local', // This email exists from seeder
+            'email' => $email,
             'password' => 'SecurePass123!',
             'firstName' => 'John',
             'lastName' => 'Doe'
         ];
 
-        // Act
+        // First registration - should succeed
+        $client->request(
+            'POST',
+            '/api/auth/register',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode($userData)
+        );
+        $this->assertEquals(Response::HTTP_CREATED, $client->getResponse()->getStatusCode());
+
+        // Act - Second registration with same email
         $client->request(
             'POST',
             '/api/auth/register',
