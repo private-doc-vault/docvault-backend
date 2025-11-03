@@ -139,6 +139,7 @@ class MeilisearchSearchApiTest extends WebTestCase
     {
         $category = new Category();
         $category->setName('Invoices');
+        $category->setSlug('invoices');
         $this->entityManager->persist($category);
         $this->entityManager->flush();
 
