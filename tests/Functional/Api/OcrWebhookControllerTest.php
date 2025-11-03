@@ -25,7 +25,6 @@ class OcrWebhookControllerTest extends WebTestCase
 
     protected function setUp(): void
     {
-        static::ensureKernelShutdown();
         $this->client = static::createClient();
         $container = static::getContainer();
 

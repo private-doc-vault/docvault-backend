@@ -80,11 +80,10 @@ class MeilisearchSearchApiTest extends WebTestCase
 
     public function testSearchEndpointRequiresAuthentication(): void
     {
-        // Shutdown kernel and create new unauthenticated client
-        static::ensureKernelShutdown();
-        $unauthenticatedClient = static::createClient();
+        // Restart client to clear authentication
+        $this->client->restart();
 
-        $unauthenticatedClient->request('GET', '/api/search/meilisearch', [
+        $this->client->request('GET', '/api/search/meilisearch', [
             'q' => 'test'
         ]);
 
