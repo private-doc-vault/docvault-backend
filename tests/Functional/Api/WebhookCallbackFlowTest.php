@@ -133,9 +133,13 @@ class WebhookCallbackFlowTest extends WebTestCase
             $this->assertEquals($documentId, $message->getDocumentId());
         }
 
-        // Cleanup
+        // Cleanup - re-fetch user after clear()
+        $userId = $user->getId();
+        $userToRemove = $this->entityManager->getRepository(User::class)->find($userId);
         $this->entityManager->remove($updatedDocument);
-        $this->entityManager->remove($user);
+        if ($userToRemove) {
+            $this->entityManager->remove($userToRemove);
+        }
         $this->entityManager->flush();
     }
 
@@ -198,9 +202,13 @@ class WebhookCallbackFlowTest extends WebTestCase
             $this->assertCount(0, $messages, 'Failed documents should not be indexed');
         }
 
-        // Cleanup
+        // Cleanup - re-fetch user after clear()
+        $userId = $user->getId();
+        $userToRemove = $this->entityManager->getRepository(User::class)->find($userId);
         $this->entityManager->remove($updatedDocument);
-        $this->entityManager->remove($user);
+        if ($userToRemove) {
+            $this->entityManager->remove($userToRemove);
+        }
         $this->entityManager->flush();
     }
 
@@ -500,9 +508,13 @@ class WebhookCallbackFlowTest extends WebTestCase
         // AND: Progress should be stored in document
         $this->assertEquals(50, $updatedDocument->getProgress());
 
-        // Cleanup
+        // Cleanup - re-fetch user after clear()
+        $userId = $user->getId();
+        $userToRemove = $this->entityManager->getRepository(User::class)->find($userId);
         $this->entityManager->remove($updatedDocument);
-        $this->entityManager->remove($user);
+        if ($userToRemove) {
+            $this->entityManager->remove($userToRemove);
+        }
         $this->entityManager->flush();
     }
 
