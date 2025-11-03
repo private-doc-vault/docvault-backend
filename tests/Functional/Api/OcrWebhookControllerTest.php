@@ -55,6 +55,14 @@ class OcrWebhookControllerTest extends WebTestCase
         parent::tearDown();
     }
 
+    /**
+     * Re-fetch document from database to get latest state
+     */
+    private function refreshDocument(Document $document): Document
+    {
+        return $this->entityManager->getRepository(Document::class)->find($document->getId());
+    }
+
     private function createTestDocument(string $status = 'processing'): Document
     {
         $document = new Document();
@@ -197,7 +205,7 @@ class OcrWebhookControllerTest extends WebTestCase
         $this->assertEquals($document->getId(), $data['document_id']);
 
         // Verify document was updated in database
-        $this->entityManager->refresh($document);
+        $document = $this->refreshDocument($document);
         $this->assertEquals('completed', $document->getProcessingStatus());
         $this->assertNotNull($document->getOcrText());
         $this->assertStringContainsString('Invoice FV/2024/001', $document->getOcrText());
@@ -348,7 +356,7 @@ class OcrWebhookControllerTest extends WebTestCase
         // THEN: Should update document to failed status
         $this->assertResponseIsSuccessful();
 
-        $this->entityManager->refresh($document);
+        $document = $this->refreshDocument($document);
         $this->assertEquals('failed', $document->getProcessingStatus());
         $this->assertNotNull($document->getProcessingError());
         $this->assertStringContainsString('OCR processing failed', $document->getProcessingError());
@@ -377,7 +385,7 @@ class OcrWebhookControllerTest extends WebTestCase
         // THEN: All metadata should be stored
         $this->assertResponseIsSuccessful();
 
-        $this->entityManager->refresh($document);
+        $document = $this->refreshDocument($document);
 
         // Check OCR text
         $this->assertStringContainsString('Invoice FV/2024/001', $document->getOcrText());
@@ -449,7 +457,7 @@ class OcrWebhookControllerTest extends WebTestCase
         // THEN: Should still complete successfully
         $this->assertResponseIsSuccessful();
 
-        $this->entityManager->refresh($document);
+        $document = $this->refreshDocument($document);
         $this->assertEquals('completed', $document->getProcessingStatus());
         $this->assertEquals('Minimal OCR text', $document->getOcrText());
         $this->assertEquals(0.75, $document->getConfidenceScore());
@@ -565,7 +573,7 @@ class OcrWebhookControllerTest extends WebTestCase
         $this->assertResponseIsSuccessful();
 
         // AND: Document progress should be updated
-        $this->entityManager->refresh($document);
+        $document = $this->refreshDocument($document);
         $this->assertEquals(50, $document->getProgress());
         $this->assertEquals('Extracting text from page 5/10', $document->getCurrentOperation());
 
@@ -608,7 +616,7 @@ class OcrWebhookControllerTest extends WebTestCase
             ], json_encode($payload));
 
             $this->assertResponseIsSuccessful();
-            $this->entityManager->refresh($document);
+            $document = $this->refreshDocument($document);
             $this->assertEquals($update['progress'], $document->getProgress());
         }
 
@@ -686,7 +694,7 @@ class OcrWebhookControllerTest extends WebTestCase
 
         // THEN: Progress updated but OCR data preserved
         $this->assertResponseIsSuccessful();
-        $this->entityManager->refresh($document);
+        $document = $this->refreshDocument($document);
         $this->assertEquals(60, $document->getProgress());
         $this->assertEquals('Partial OCR text', $document->getOcrText());
         $this->assertEquals(0.85, $document->getConfidenceScore());
