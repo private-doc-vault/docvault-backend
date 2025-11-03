@@ -24,8 +24,10 @@ class CategoryTest extends TestCase
 
     public function testCategoryHasUuidId(): void
     {
-        $this->assertNull($this->category->getId());
-        
+        // Category should auto-generate UUID in constructor
+        $this->assertNotNull($this->category->getId());
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $this->category->getId());
+
         $uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
         $this->category->setId($uuid);
         $this->assertEquals($uuid, $this->category->getId());

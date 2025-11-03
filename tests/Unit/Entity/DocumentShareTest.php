@@ -41,7 +41,9 @@ class DocumentShareTest extends TestCase
 
     public function testIdIsNullByDefault(): void
     {
-        $this->assertNull($this->documentShare->getId());
+        // DocumentShare should auto-generate UUID in constructor
+        $this->assertNotNull($this->documentShare->getId());
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $this->documentShare->getId());
     }
 
     // ========== Document Relationship Tests ==========

@@ -25,8 +25,10 @@ class UserGroupTest extends TestCase
 
     public function testUserGroupHasUuidId(): void
     {
-        $this->assertNull($this->userGroup->getId());
-        
+        // UserGroup should auto-generate UUID in constructor
+        $this->assertNotNull($this->userGroup->getId());
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $this->userGroup->getId());
+
         $uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
         $this->userGroup->setId($uuid);
         $this->assertEquals($uuid, $this->userGroup->getId());

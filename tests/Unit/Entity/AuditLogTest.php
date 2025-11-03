@@ -25,8 +25,10 @@ class AuditLogTest extends TestCase
 
     public function testAuditLogHasUuidId(): void
     {
-        $this->assertNull($this->auditLog->getId());
-        
+        // AuditLog should auto-generate UUID in constructor
+        $this->assertNotNull($this->auditLog->getId());
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $this->auditLog->getId());
+
         $uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
         $this->auditLog->setId($uuid);
         $this->assertEquals($uuid, $this->auditLog->getId());

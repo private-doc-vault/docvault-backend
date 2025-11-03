@@ -24,8 +24,10 @@ class DocumentTest extends TestCase
 
     public function testDocumentHasUuidId(): void
     {
-        $this->assertNull($this->document->getId());
-        
+        // Document should auto-generate UUID in constructor
+        $this->assertNotNull($this->document->getId());
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i', $this->document->getId());
+
         // Test that ID can be set (for testing purposes)
         $uuid = 'f47ac10b-58cc-4372-a567-0e02b2c3d479';
         $this->document->setId($uuid);
