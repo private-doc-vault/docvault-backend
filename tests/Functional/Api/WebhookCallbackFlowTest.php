@@ -250,9 +250,11 @@ class WebhookCallbackFlowTest extends WebTestCase
         $unchangedDocument = $this->entityManager->getRepository(Document::class)->find($documentId);
         $this->assertEquals('processing', $unchangedDocument->getProcessingStatus());
 
-        // Cleanup
+        // Cleanup - re-fetch user after clear()
+        $userId = $user->getId();
+        $userToRemove = $this->entityManager->getRepository(User::class)->find($userId);
         $this->entityManager->remove($unchangedDocument);
-        $this->entityManager->remove($user);
+        $this->entityManager->remove($userToRemove);
         $this->entityManager->flush();
     }
 
@@ -349,9 +351,11 @@ class WebhookCallbackFlowTest extends WebTestCase
         $this->assertEquals('completed', $updatedDocument->getProcessingStatus());
         $this->assertEquals('Test document content', $updatedDocument->getOcrText());
 
-        // Cleanup
+        // Cleanup - re-fetch user after clear()
+        $userId = $user->getId();
+        $userToRemove = $this->entityManager->getRepository(User::class)->find($userId);
         $this->entityManager->remove($updatedDocument);
-        $this->entityManager->remove($user);
+        $this->entityManager->remove($userToRemove);
         $this->entityManager->flush();
     }
 

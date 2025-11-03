@@ -40,7 +40,7 @@ class SearchHistoryApiTest extends WebTestCase
         $user = new User();
         $user->setId(Uuid::uuid4()->toString());
         $user->setEmail($email);
-        $user->setName($name);
+        $user->setFirstName($name);
         $user->setPassword('$2y$13$test'); // Dummy hash
         $user->setRoles(['ROLE_USER']);
 

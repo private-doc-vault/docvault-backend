@@ -415,7 +415,7 @@ class DocumentProcessingService
 
         return [
             'status' => $document->getProcessingStatus(),
-            'progress' => $metadata['progress'] ?? 0,
+            'progress' => $document->getProgress() ?? 0,
             'error' => $document->getProcessingError(),
             'task_id' => $metadata['ocr_task_id'] ?? null
         ];

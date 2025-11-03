@@ -221,9 +221,9 @@ class DocumentTest extends TestCase
 
     public function testDocumentConfidenceScore(): void
     {
-        $confidence = 0.95;
+        $confidence = '0.95';
         $this->document->setConfidenceScore($confidence);
-        
+
         $this->assertEquals($confidence, $this->document->getConfidenceScore());
     }
 

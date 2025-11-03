@@ -76,7 +76,7 @@ class EntityFixtureIntegrationTest extends EntityTestCase
             'mimeType' => 'application/pdf',
             'fileSize' => 2048000,
             'ocrText' => 'This is test content from integration test',
-            'confidenceScore' => 0.98
+            'confidenceScore' => '0.98'
         ]);
 
         // Act

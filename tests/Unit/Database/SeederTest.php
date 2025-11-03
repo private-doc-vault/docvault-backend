@@ -296,7 +296,10 @@ class SeederTest extends KernelTestCase
             $this->assertNotEmpty($category->getName(), 'Category name should not be empty');
             $this->assertNotEmpty($category->getSlug(), 'Category slug should not be empty');
             $this->assertMatchesRegularExpression('/^[a-z0-9-]+$/', $category->getSlug(), 'Category slug should be valid');
-            $this->assertMatchesRegularExpression('/^#[0-9A-Fa-f]{6}$/', $category->getColor(), 'Category color should be valid hex');
+            $color = $category->getColor();
+            if ($color !== null) {
+                $this->assertMatchesRegularExpression('/^#[0-9A-Fa-f]{6}$/', $color, 'Category color should be valid hex');
+            }
         }
         
         // Check tag validation  

@@ -129,7 +129,7 @@ class EntityFixtureBuilder
             'mimeType' => 'application/pdf',
             'fileSize' => 1024000, // 1MB
             'ocrText' => 'This is test OCR content extracted from the document.',
-            'confidenceScore' => 0.95,
+            'confidenceScore' => '0.95',
             'processingStatus' => 'completed',
             'versionNumber' => 1,
             'archived' => false,
@@ -150,7 +150,7 @@ class EntityFixtureBuilder
         $document->setMimeType($data['mimeType']);
         $document->setFileSize($data['fileSize']);
         $document->setOcrText($data['ocrText']);
-        $document->setConfidenceScore($data['confidenceScore']);
+        $document->setConfidenceScore(is_float($data['confidenceScore']) ? (string)$data['confidenceScore'] : $data['confidenceScore']);
         $document->setProcessingStatus($data['processingStatus']);
         $document->setVersionNumber($data['versionNumber']);
         $document->setArchived($data['archived']);

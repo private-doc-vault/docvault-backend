@@ -87,7 +87,7 @@ class DocumentProcessingStatusApiTest extends WebTestCase
     {
         $document = $this->createTestDocument('completed');
         $document->setOcrText('Sample OCR text');
-        $document->setConfidenceScore(0.95);
+        $document->setConfidenceScore('0.95');
         $this->entityManager->flush();
 
         $this->client->request('GET', '/api/documents/' . $document->getId() . '/processing-status');

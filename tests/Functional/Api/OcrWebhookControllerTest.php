@@ -247,10 +247,13 @@ class OcrWebhookControllerTest extends WebTestCase
         // GIVEN: Invalid JSON payload
         $invalidJson = '{"task_id": "task-123", "status": "completed", invalid json}';
 
-        // WHEN: Webhook called with invalid JSON
+        // Generate valid signature for the malformed JSON content
+        $signature = hash_hmac('sha256', $invalidJson, $this->webhookSecret);
+
+        // WHEN: Webhook called with invalid JSON but valid signature
         $this->client->request('POST', '/api/webhooks/ocr/callback', [], [], [
             'CONTENT_TYPE' => 'application/json',
-            'HTTP_X_WEBHOOK_SIGNATURE' => 'dummy_signature',
+            'HTTP_X_WEBHOOK_SIGNATURE' => $signature,
         ], $invalidJson);
 
         // THEN: Should return 400
@@ -660,7 +663,7 @@ class OcrWebhookControllerTest extends WebTestCase
         $document = $this->createTestDocument('doc-preserve-' . uniqid());
         $document->setProcessingStatus('processing');
         $document->setOcrText('Partial OCR text');
-        $document->setConfidenceScore(0.85);
+        $document->setConfidenceScore('0.85');
         $this->entityManager->flush();
 
         // WHEN: Progress update sent
