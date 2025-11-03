@@ -372,7 +372,7 @@ class DocumentProcessingServiceTest extends TestCase
         // GIVEN a document being processed
         $document = $this->createDocument();
         $document->setProcessingStatus(Document::STATUS_PROCESSING);
-        $document->setMetadata(['progress' => 50]);
+        $document->setProgress(50);
 
         // WHEN we get processing status
         $status = $this->service->getProcessingStatus($document);

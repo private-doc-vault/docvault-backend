@@ -359,6 +359,7 @@ class DocumentProcessingStatusApiTest extends WebTestCase
         $document->setProgress(85);
         $document->setCurrentOperation('Extracting metadata');
         $this->entityManager->flush();
+        $this->entityManager->clear(); // Clear entity manager cache
 
         $this->client->request('GET', '/api/documents/' . $document->getId() . '/processing-status');
         $this->assertResponseIsSuccessful();
@@ -367,8 +368,12 @@ class DocumentProcessingStatusApiTest extends WebTestCase
         $this->assertEquals('Extracting metadata', $data['current_operation']);
 
         // Cleanup
-        $this->entityManager->remove($document);
-        $this->entityManager->flush();
+        $documentId = $document->getId();
+        $documentToRemove = $this->entityManager->getRepository(Document::class)->find($documentId);
+        if ($documentToRemove) {
+            $this->entityManager->remove($documentToRemove);
+            $this->entityManager->flush();
+        }
     }
 
     /**
