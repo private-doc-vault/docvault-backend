@@ -389,24 +389,7 @@ class DocumentProcessingServiceTest extends TestCase
         $document->setFilePath('2024/10/user-123/failed.pdf');
         $document->setProcessingStatus(Document::STATUS_FAILED);
         $document->setProcessingError('OCR service timeout');
-
-        // Mock storage service
-        $absolutePath = $this->createTempFile('failed.pdf');
-        $this->storageService->expects($this->once())
-            ->method('getAbsolutePath')
-            ->willReturn($absolutePath);
-
-        // Mock successful retry
-        $response = $this->createMock(ResponseInterface::class);
-        $response->method('getStatusCode')->willReturn(200);
-        $response->method('toArray')->willReturn([
-            'task_id' => 'retry-task-456',
-            'status' => Document::STATUS_QUEUED
-        ]);
-
-        $this->httpClient->expects($this->once())
-            ->method('request')
-            ->willReturn($response);
+        $document->setMetadata(['ocr_task_id' => 'old-task-123']);
 
         // WHEN we retry processing
         $this->service->retryProcessing($document);
@@ -415,8 +398,9 @@ class DocumentProcessingServiceTest extends TestCase
         $this->assertEquals(Document::STATUS_QUEUED, $document->getProcessingStatus());
         $this->assertNull($document->getProcessingError());
 
-        // Cleanup
-        unlink($absolutePath);
+        // AND previous task ID should be cleared
+        $metadata = $document->getMetadata();
+        $this->assertArrayNotHasKey('ocr_task_id', $metadata);
     }
 
     /**
@@ -584,7 +568,7 @@ class DocumentProcessingServiceTest extends TestCase
         // GIVEN a document with default language from entity ('en')
         $document = $this->createDocument();
         $document->setFilePath('2024/10/user-123/document.pdf');
-        // Document entity defaults to language 'en', which maps to 'eng' in ?? operator
+        // Document entity defaults to language 'en', which is mapped to 'eng' for OCR service
 
         // Mock storage service (create real file)
         $absolutePath = $this->createTempFile('document.pdf');
@@ -592,7 +576,7 @@ class DocumentProcessingServiceTest extends TestCase
             ->method('getAbsolutePath')
             ->willReturn($absolutePath);
 
-        // EXPECT HTTP request with language from document ('en')
+        // EXPECT HTTP request with mapped language code
         $response = $this->createMock(ResponseInterface::class);
         $response->method('getStatusCode')->willReturn(200);
         $response->method('toArray')->willReturn([
@@ -607,7 +591,7 @@ class DocumentProcessingServiceTest extends TestCase
                 $this->anything(),
                 $this->callback(function ($options) {
                     return isset($options['body']['language'])
-                        && $options['body']['language'] === 'en'; // Should use document's default 'en'
+                        && $options['body']['language'] === 'eng'; // 'en' is mapped to 'eng' for OCR service
                 })
             )
             ->willReturn($response);
