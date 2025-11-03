@@ -328,24 +328,30 @@ class DocumentProcessingStatusApiTest extends WebTestCase
         $this->assertEquals('Converting document to images', $data['current_operation']);
 
         // Stage 2: OCR processing (50%)
+        $documentId = $document->getId();
+        $this->entityManager->clear();
+        $document = $this->entityManager->getRepository(Document::class)->find($documentId);
+
         $document->setProgress(50);
         $document->setCurrentOperation('Performing OCR on page 5/10');
         $this->entityManager->flush();
 
-        $this->client->request('GET', '/api/documents/' . $document->getId() . '/processing-status');
+        $this->client->request('GET', '/api/documents/' . $documentId . '/processing-status');
         $this->assertResponseIsSuccessful();
         $data = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals(50, $data['progress']);
         $this->assertEquals('Performing OCR on page 5/10', $data['current_operation']);
 
         // Stage 3: Metadata extraction (85%)
-        $documentId = $document->getId();
+        $this->entityManager->clear();
+        $document = $this->entityManager->getRepository(Document::class)->find($documentId);
+
         $document->setProgress(85);
         $document->setCurrentOperation('Extracting metadata');
         $this->entityManager->flush();
-        $this->entityManager->clear(); // Clear entity manager cache
+        $this->entityManager->clear();
 
-        // Refetch document to ensure changes are persisted
+        // Refetch document to verify changes persisted
         $document = $this->entityManager->getRepository(Document::class)->find($documentId);
 
         $this->client->request('GET', '/api/documents/' . $documentId . '/processing-status');

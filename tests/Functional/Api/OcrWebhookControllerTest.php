@@ -62,6 +62,7 @@ class OcrWebhookControllerTest extends WebTestCase
      */
     private function refreshDocument(Document $document): Document
     {
+        $this->entityManager->clear();
         return $this->entityManager->getRepository(Document::class)->find($document->getId());
     }
 
