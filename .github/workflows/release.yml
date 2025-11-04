@@ -56,3 +56,17 @@ jobs:
           echo "Image pushed successfully!"
           echo "Tags: ${{ steps.meta.outputs.tags }}"
           echo "Version: ${{ github.event.release.tag_name }}"
+
+      - name: Trigger infrastructure repo update
+        uses: peter-evans/repository-dispatch@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          repository: docvault-app/docvault-infrastructure
+          event-type: service-released
+          client-payload: |
+            {
+              "service": "backend",
+              "version": "${{ github.event.release.tag_name }}",
+              "repository": "${{ github.repository }}",
+              "release_url": "${{ github.event.release.html_url }}"
+            }
